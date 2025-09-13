@@ -4,10 +4,10 @@ import { env } from '../config/env.js';
 export type AccessPayload = { userId: string, role: string };
 export type RefreshPayload = { userId: string, tokenId: string, jti: string };
 
-const SECRET = env.JWT_SECRET!;
+const SECRET = env.JWT_SECRET as string;
 
 export function signAccessToken(payload: AccessPayload) {
-    return jwt.sign(payload, SECRET, { expiresIn: Number(env.JWT_ACCESS_EXPIRES) });
+    return jwt.sign(payload, SECRET, { expiresIn: 15 * 60 });
 }
 
 export function verifyAccessToken(token: string): AccessPayload {
@@ -15,7 +15,7 @@ export function verifyAccessToken(token: string): AccessPayload {
 }
 
 export function signRefreshToken(payload: RefreshPayload) {
-    return jwt.sign(payload, SECRET, { expiresIn: Number(env.JWT_REFRESH_EXPIRES) });
+    return jwt.sign(payload, SECRET, { expiresIn: 7 * 24 * 60 * 60 });
 }
 
 export function verifyRefreshToken(token: string): RefreshPayload {
