@@ -2,9 +2,9 @@ import express, { type Request, type Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser'; 
-import authRoutes from './modules/auth/auth.route'
 import { requireAuth } from './middlewares/auth';
 import { errorHandler } from './middlewares/errorHandler';
+import router from './routes';
 
 dotenv.config();
 
@@ -14,10 +14,10 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/api/auth", authRoutes);
+app.use("/api", router);
 
 app.get("/", requireAuth, (req: Request, res: Response) => {
-    res.status(200).json({ message: "spacetip backend endpoint" });
+    res.status(200).json({ message: "SpaceTip backend endpoint" });
 });
 
 app.use(errorHandler);
