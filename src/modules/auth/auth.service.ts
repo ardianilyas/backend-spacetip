@@ -1,0 +1,114 @@
+import crypto from 'crypto';
+import { RefreshTokenRepository } from './refreshToken.repository.js';
+import { compareHash, hashString } from '../../utils/bcrypt.js';
+import { prisma } from '../../config/prisma.js';
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../utils/jwt.js';
+import { v4 as uuidv4 } from 'uuid';
+import { env } from '../../config/env.js';
+
+function msFromExpiryString(expStr: string) {
+    const num = parseInt(expStr.slice(0, -1), 10);
+    const unit = expStr.slice(-1);
+    if (unit === "m") return num * 60 * 1000;
+    if (unit === "h") return num * 60 * 60 * 1000;
+    if (unit === "d") return num * 24 * 60 * 60 * 1000;
+    return 0;
+}
+
+export class AuthService {
+    constructor(private refreshRepo = new RefreshTokenRepository()) {
+
+    }
+
+    async register(name: string, email: string, password: string) {
+        const hashed = await hashString(password);
+        const user = await prisma.user.create({
+            data: { email, password: hashed, name },
+            select: { id: true, email: true, name: true },
+        });
+        return user;
+    }
+
+    async login(email: string, password: string) {
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user) throw new Error("Invalid credentials");
+
+        const ok = await compareHash(password, user.password);
+        if(!ok) throw new Error("Invalid credentials");
+
+        const accessToken = signAccessToken({ userId: user.id, role: user.role });
+
+        const tokenId = uuidv4();
+        const jti = crypto.randomBytes(64).toString("hex");
+        const tokenHash = await hashString(jti);
+        const expiresAt = new Date(Date.now() + msFromExpiryString(env.JWT_REFRESH_EXPIRES));
+
+        await this.refreshRepo.create({
+            id: tokenId,
+            tokenHash,
+            userId: user.id,
+            expiresAt
+        });
+
+        const refreshJwt = signRefreshToken({ userId: user.id, tokenId, jti });
+
+        return { accessToken, refreshToken: refreshJwt };
+    }
+
+    async rotateRefresh(refreshJwt: string) {
+        const payload = verifyRefreshToken(refreshJwt);
+        const { tokenId, userId, jti } = payload;
+
+        const tokenRecord = await this.refreshRepo.findById(tokenId);
+
+        if(!tokenRecord) {
+            await this.refreshRepo.revokeAllForUser(userId);
+            throw new Error("Refresh token reuse detected or token revoked");
+        }
+
+        if (tokenRecord.revoked) {
+            await this.refreshRepo.revokeAllForUser(userId)
+            throw new Error("Refresh token revoked");
+        }
+
+        const match = await compareHash(jti, tokenRecord.tokenHash);
+        if(!match) {
+            await this.refreshRepo.revokeAllForUser(userId);
+            throw new Error("Refresh token reuse detected or token revoked");
+        }
+
+        await this.refreshRepo.deleteById(tokenId);
+
+        const newTokenId = uuidv4();
+        const newJti = crypto.randomBytes(64).toString("hex");
+        const newHash = await hashString(newJti);
+        const expiresAt = new Date(Date.now() + msFromExpiryString(env.JWT_REFRESH_EXPIRES));
+
+        await this.refreshRepo.create({
+            id: newTokenId,
+            tokenHash: newHash,
+            userId,
+            expiresAt,
+        });
+
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if(!user) throw new Error("User not found");
+
+        const newRefreshJwt = signRefreshToken({ userId, tokenId: newTokenId, jti: newJti });
+        const accessToken = signAccessToken({ userId, role: user.role });
+
+        return { accessToken, refreshToken: newRefreshJwt };
+    }
+
+    async logout(refreshJwt: string) {
+        if (!refreshJwt) return;
+
+        try {
+            const payload = verifyRefreshToken(refreshJwt);
+            const { tokenId, userId } = payload;
+            await this.refreshRepo.deleteById(tokenId);
+        } catch (error) {
+            
+        }
+    }
+}
