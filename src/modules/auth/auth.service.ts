@@ -5,6 +5,7 @@ import { prisma } from '../../config/prisma.js';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../utils/jwt.js';
 import { v4 as uuidv4 } from 'uuid';
 import { env } from '../../config/env.js';
+import { LoginSchema, RegisterSchema } from './auth.schema.js';
 
 function msFromExpiryString(expStr: string) {
     const num = parseInt(expStr.slice(0, -1), 10);
@@ -20,20 +21,22 @@ export class AuthService {
 
     }
 
-    async register(name: string, email: string, password: string) {
-        const hashed = await hashString(password);
+    async register(data: RegisterSchema) {
+        const hashed = await hashString(data.password);
+
         const user = await prisma.user.create({
-            data: { email, password: hashed, name },
+            data: { ...data, password: hashed },
             select: { id: true, email: true, name: true },
         });
+
         return user;
     }
 
-    async login(email: string, password: string) {
-        const user = await prisma.user.findUnique({ where: { email } });
+    async login(data: LoginSchema) {
+        const user = await prisma.user.findUnique({ where: { email: data.email } });
         if (!user) throw new Error("Invalid credentials");
 
-        const ok = await compareHash(password, user.password);
+        const ok = await compareHash(data.password, user.password);
         if(!ok) throw new Error("Invalid credentials");
 
         const accessToken = signAccessToken({ userId: user.id, role: user.role });
