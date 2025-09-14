@@ -29,6 +29,7 @@ model User {
   googleId  String?   @unique
   role      RoleUser  @default(USER)
   tokens    RefreshToken[]
+  creator   Creator?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
@@ -43,4 +44,20 @@ model RefreshToken {
   expiresAt   DateTime
   createdAt   DateTime  @default(now())
   revoked     Boolean   @default(false)
+
+  @@map("refresh_tokens")
+}
+
+model Creator {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+  bio           String?
+  imageUrl      String?
+  isVerified    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("creators")
 }
