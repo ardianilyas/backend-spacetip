@@ -23,6 +23,11 @@ export function errorHandler(err: any, req: Request, res: Response, next: NextFu
                 success: false,
                 message: "Unique constraint failed",
             });
+        } else if (err.code === "P2025") {
+            return res.status(404).json({
+                success: false,
+                message: "Resource Not found",
+            });
         }
     }
 
