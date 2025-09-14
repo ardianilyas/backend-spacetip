@@ -17,8 +17,8 @@ export class AuthController {
     async register(req: Request, res: Response, next: NextFunction) {
         try {
             const data: RegisterSchema = validate(registerSchema, req.body);
-            const user = await this.authService.register(data);
-            res.status(201).json(user);
+            await this.authService.register(data);
+            res.status(201).json({ success: true, message: "User registered successfully" });
         } catch (error) {
             next(error);
         }

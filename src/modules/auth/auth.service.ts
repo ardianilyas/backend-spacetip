@@ -7,19 +7,17 @@ import { v4 as uuidv4 } from 'uuid';
 import { env } from '../../config/env.js';
 import { LoginSchema, RegisterSchema } from './auth.schema.js';
 import msFromExpiryString from '../../utils/msFromExpiryString.js';
+import { AuthRepository } from './auth.repository.js';
 
 export class AuthService {
-    constructor(private refreshRepo = new RefreshTokenRepository()) {
+    constructor(private refreshRepo = new RefreshTokenRepository(), private authRepo = new AuthRepository()) {
 
     }
 
     async register(data: RegisterSchema) {
         const hashed = await hashString(data.password);
 
-        const user = await prisma.user.create({
-            data: { ...data, password: hashed },
-            select: { id: true, email: true, name: true },
-        });
+        const user = await this.authRepo.createUser({ ...data, password: hashed });
 
         return user;
     }
