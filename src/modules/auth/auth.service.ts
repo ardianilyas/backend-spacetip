@@ -36,7 +36,7 @@ export class AuthService {
         const user = await prisma.user.findUnique({ where: { email: data.email } });
         if (!user) throw new Error("Invalid credentials");
 
-        const ok = await compareHash(data.password, user.password);
+        const ok = await compareHash(data.password, user.password!);
         if(!ok) throw new Error("Invalid credentials");
 
         const accessToken = signAccessToken({ userId: user.id, role: user.role });
