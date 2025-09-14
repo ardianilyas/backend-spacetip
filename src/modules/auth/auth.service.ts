@@ -8,6 +8,8 @@ import { env } from '../../config/env.js';
 import { LoginSchema, RegisterSchema } from './auth.schema.js';
 import msFromExpiryString from '../../utils/msFromExpiryString.js';
 import { AuthRepository } from './auth.repository.js';
+import { logger } from '../../utils/logger.js';
+import { ConflictError, NotFoundError } from '../../utils/errors.js';
 
 export class AuthService {
     constructor(private refreshRepo = new RefreshTokenRepository(), private authRepo = new AuthRepository()) {
@@ -17,7 +19,11 @@ export class AuthService {
     async register(data: RegisterSchema) {
         const hashed = await hashString(data.password);
 
+        const exists = await this.authRepo.findUserByEmail(data.email);
+        if (exists) throw new ConflictError("User already exists");
+
         const user = await this.authRepo.createUser({ ...data, password: hashed });
+        logger.app.info({ data: user }, "A new user registered");
 
         return user;
     }
@@ -77,15 +83,16 @@ export class AuthService {
         const newHash = await hashString(newJti);
         const expiresAt = new Date(Date.now() + msFromExpiryString(env.JWT_REFRESH_EXPIRES));
 
-        await this.refreshRepo.create({
+        const newRefresh = await this.refreshRepo.create({
             id: newTokenId,
             tokenHash: newHash,
             userId,
             expiresAt,
         });
+        logger.app.info({ data: newRefresh }, "A new refresh token created");
 
         const user = await prisma.user.findUnique({ where: { id: userId } });
-        if(!user) throw new Error("User not found");
+        if(!user) throw new NotFoundError("User not found");
 
         const newRefreshJwt = signRefreshToken({ userId, tokenId: newTokenId, jti: newJti });
         const accessToken = signAccessToken({ userId, role: user.role });
