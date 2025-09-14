@@ -5,6 +5,8 @@ import cookieParser from 'cookie-parser';
 import { requireAuth } from './middlewares/auth';
 import { errorHandler } from './middlewares/errorHandler';
 import router from './routes';
+import "./config/passport";
+import passport from 'passport';
 
 dotenv.config();
 
@@ -13,6 +15,7 @@ const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(passport.initialize());
 
 app.use("/api", router);
 

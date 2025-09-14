@@ -3,6 +3,10 @@ import { ZodError } from "zod";
 import { Prisma } from "../../prisma/generated/prisma/index.js";
 
 export function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
+    if (res.headersSent) {
+        return next(err);
+    }
+    
     if (err instanceof ZodError) {
         return res.status(400).json({
             success: false,

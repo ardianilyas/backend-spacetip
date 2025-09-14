@@ -6,15 +6,7 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../uti
 import { v4 as uuidv4 } from 'uuid';
 import { env } from '../../config/env.js';
 import { LoginSchema, RegisterSchema } from './auth.schema.js';
-
-function msFromExpiryString(expStr: string) {
-    const num = parseInt(expStr.slice(0, -1), 10);
-    const unit = expStr.slice(-1);
-    if (unit === "m") return num * 60 * 1000;
-    if (unit === "h") return num * 60 * 60 * 1000;
-    if (unit === "d") return num * 24 * 60 * 60 * 1000;
-    return 0;
-}
+import msFromExpiryString from '../../utils/msFromExpiryString.js';
 
 export class AuthService {
     constructor(private refreshRepo = new RefreshTokenRepository()) {
