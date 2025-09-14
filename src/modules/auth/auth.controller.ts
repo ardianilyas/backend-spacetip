@@ -2,6 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 import { AuthService } from "./auth.service.js";
 import { clearAuthCookies, setAccessCookie, setRefreshCookie } from "../../utils/cookies.js";
 import { env } from "../../config/env.js";
+import { validate } from "../../utils/validate.js";
+import { loginSchema, RegisterSchema, registerSchema } from "./auth.schema.js";
 
 function msFromExpiryString(expStr: string) {
     const num = parseInt(expStr.slice(0, -1), 10);
@@ -22,8 +24,8 @@ export class AuthController {
 
     async register(req: Request, res: Response, next: NextFunction) {
         try {
-            const { name, email, password } = req.body;
-            const user = await this.authService.register(name, email, password);
+            const data: RegisterSchema = validate(registerSchema, req.body);
+            const user = await this.authService.register(data);
             res.status(201).json(user);
         } catch (error) {
             next(error);
@@ -32,8 +34,8 @@ export class AuthController {
 
     async login(req: Request, res: Response, next: NextFunction) {
         try {
-          const { email, password } = req.body;
-          const { accessToken, refreshToken } = await this.authService.login(email, password);
+          const data = validate(loginSchema, req.body);
+          const { accessToken, refreshToken } = await this.authService.login(data);
       
           setAccessCookie(res, accessToken, msFromExpiryString(env.JWT_ACCESS_EXPIRES));
           setRefreshCookie(res, refreshToken, msFromExpiryString(env.JWT_REFRESH_EXPIRES));
