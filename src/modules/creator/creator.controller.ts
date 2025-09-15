@@ -4,7 +4,7 @@ import { validate } from "../../utils/validate";
 import { createCreatorSchema } from "./creator.schema";
 
 export class CreatorController {
-    constructor(private creatorService = new CreatorService()) {
+    constructor(private creatorService: CreatorService) {
         this.createCreator = this.createCreator.bind(this);
         this.findCreatorByUsername = this.findCreatorByUsername.bind(this);
         this.verifyCreator = this.verifyCreator.bind(this);

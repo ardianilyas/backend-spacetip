@@ -1,11 +1,10 @@
-import { Creator } from "../../../prisma/generated/prisma";
 import { ConflictError, NotFoundError } from "../../utils/errors";
 import { logger } from "../../utils/logger";
 import { CreatorRepository } from "./creator.repository";
 import { CreateCreatorSchema } from "./creator.schema";
 
 export class CreatorService {
-    constructor(private creatorRepo = new CreatorRepository()) {}
+    constructor(private creatorRepo: CreatorRepository) {}
 
     async createCreator(data: CreateCreatorSchema) {
         const exists = await this.creatorRepo.findCreatorByUsername(data.username);
