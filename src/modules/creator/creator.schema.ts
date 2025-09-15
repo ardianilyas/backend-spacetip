@@ -5,10 +5,10 @@ export const createCreatorSchema = z.object({
     .min(1, "username is required")
     .max(100, "username too long")
     .refine((val) => !/\s/.test(val), {
-      message: "username tidak boleh mengandung spasi",
+      message: "username cannot contain spaces",
     })
     .refine((val) => !/[A-Z]/.test(val), {
-      message: "username tidak boleh mengandung huruf besar",
+      message: "username cannot contain uppercase letters",
     }),
     bio: z.string().optional()
 });
