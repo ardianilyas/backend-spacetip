@@ -6,6 +6,10 @@ import { CreateCreatorSchema } from "./creator.schema";
 export class CreatorService {
     constructor(private creatorRepo: CreatorRepository) {}
 
+    async getAllCreators() {
+        return this.creatorRepo.getAllCreators();
+    }
+
     async createCreator(data: CreateCreatorSchema) {
         const exists = await this.creatorRepo.findCreatorByUsername(data.username);
 

@@ -5,9 +5,19 @@ import { createCreatorSchema } from "./creator.schema";
 
 export class CreatorController {
     constructor(private creatorService: CreatorService) {
+        this.getAllCreators = this.getAllCreators.bind(this);
         this.createCreator = this.createCreator.bind(this);
         this.findCreatorByUsername = this.findCreatorByUsername.bind(this);
         this.verifyCreator = this.verifyCreator.bind(this);
+    }
+
+    async getAllCreators(req: Request, res: Response, next: NextFunction) {
+        try {
+            const creators = await this.creatorService.getAllCreators();
+            return res.status(200).json({ success: true, data: creators });
+        } catch (error) {
+            next(error);
+        }
     }
 
     async createCreator(req: Request, res: Response, next: NextFunction) {
