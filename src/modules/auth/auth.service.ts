@@ -12,7 +12,7 @@ import { logger } from '../../utils/logger.js';
 import { ConflictError, NotFoundError } from '../../utils/errors.js';
 
 export class AuthService {
-    constructor(private refreshRepo = new RefreshTokenRepository(), private authRepo = new AuthRepository()) {
+    constructor(private refreshRepo: RefreshTokenRepository, private authRepo: AuthRepository) {
 
     }
 

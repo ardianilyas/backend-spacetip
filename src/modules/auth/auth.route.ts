@@ -5,9 +5,18 @@ import passport from "passport";
 import { setAccessCookie, setRefreshCookie } from "../../utils/cookies.js";
 import msFromExpiryString from "../../utils/msFromExpiryString.js";
 import { env } from "../../config/env.js";
+import { RefreshTokenRepository } from "./refreshToken.repository.js";
+import { AuthRepository } from "./auth.repository.js";
+import { AuthService } from "./auth.service.js";
 
 const router = Router();
-const controller = new AuthController();
+
+const refreshRepo = new RefreshTokenRepository();
+const authRepo = new AuthRepository();
+
+const authService = new AuthService(refreshRepo, authRepo);
+
+const controller = new AuthController(authService);
 
 router.post("/register", controller.register);
 router.post("/login", controller.login);

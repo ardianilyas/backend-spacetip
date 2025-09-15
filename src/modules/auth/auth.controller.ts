@@ -7,7 +7,7 @@ import { loginSchema, RegisterSchema, registerSchema } from "./auth.schema.js";
 import msFromExpiryString from "../../utils/msFromExpiryString.js";
 
 export class AuthController {
-    constructor(private authService = new AuthService()) {
+    constructor(private authService: AuthService) {
         this.register = this.register.bind(this);
         this.login = this.login.bind(this);
         this.refresh = this.refresh.bind(this);
