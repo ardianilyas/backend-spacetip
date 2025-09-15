@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "./generated/prisma"
@@ -21,6 +15,18 @@ enum RoleUser {
   CREATOR
 }
 
+enum DonationStatus {
+  PENDING
+  PAID
+  EXPIRED
+  FAILED
+}
+
+enum TransactionStatus {
+  SUCCESS
+  FAILED
+}
+
 model User {
   id        String    @id @default(uuid())
   name      String
@@ -28,8 +34,10 @@ model User {
   password  String?
   googleId  String?   @unique
   role      RoleUser  @default(USER)
+
   tokens    RefreshToken[]
   creator   Creator?
+  donations Donation[] @relation("DonorRelation")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
@@ -49,15 +57,60 @@ model RefreshToken {
 }
 
 model Creator {
-  id            String    @id @default(uuid())
-  username      String    @unique
-  userId        String    @unique
-  user          User      @relation(fields: [userId], references: [id])
+  id            String        @id @default(uuid())
+  username      String        @unique
+  userId        String        @unique
+  user          User          @relation(fields: [userId], references: [id])
   bio           String?
   imageUrl      String?
-  isVerified    Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  isVerified    Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  donations     Donation[]    @relation("CreatorRelation")
+  transactions  Transaction[]
 
   @@map("creators")
+}
+
+model Donation {
+  id            String          @id @default(uuid())
+  referenceId   String          @unique
+  amount        Int
+  currency      String          @default("IDR")
+  status        DonationStatus  @default(PENDING)
+  message       String?
+  donorName     String?
+  xenditQrId    String?
+  expiresAt     DateTime
+  paidAt        DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  creatorId     String
+  donorId       String?
+
+  creator       Creator         @relation("CreatorRelation", fields: [creatorId], references: [id])
+  donor         User?           @relation("DonorRelation", fields: [donorId], references: [id])
+
+  transaction   Transaction?    @relation("DonationTransaction")
+
+  @@map("donations")
+}
+
+model Transaction {
+  id              String              @id @default(uuid())
+  amount          Int
+  currency        String              @default("IDR")
+  paymentMethod   String
+  status          TransactionStatus   @default(SUCCESS)
+  xenditPaymentId String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  donationId      String    @unique
+  creatorId       String
+
+  donation        Donation  @relation("DonationTransaction", fields: [donationId], references: [id])
+  creator         Creator   @relation(fields: [creatorId], references: [id])
 }
