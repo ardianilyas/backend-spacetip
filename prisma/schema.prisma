@@ -59,6 +59,7 @@ model RefreshToken {
 model Creator {
   id            String        @id @default(uuid())
   username      String        @unique
+  balance       Int           @default(0)
   userId        String        @unique
   user          User          @relation(fields: [userId], references: [id])
   bio           String?
