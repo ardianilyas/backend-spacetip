@@ -5,17 +5,17 @@ export interface AuthRequest extends Request {
     user: { userId: string, role: string };
 }
 
-export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
     try {
       const access = req.cookies?.accessToken;
       if (!access) {
-        res.status(401).json({ success: false, message: "Unauthorized" });
+        return res.status(401).json({ success: false, message: "Unauthorized" });
       }
   
       const payload = verifyAccessToken(access);
       (req as AuthRequest).user = { userId: payload.userId, role: payload.role };
       next();
     } catch {
-        res.status(401).json({ success: false, message: "Invalid token" });
+        return res.status(401).json({ success: false, message: "Invalid token" });
     }
   };

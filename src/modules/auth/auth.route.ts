@@ -20,6 +20,7 @@ const controller = new AuthController(authService);
 
 router.post("/register", controller.register);
 router.post("/login", controller.login);
+router.post("/refresh", controller.refresh);
 
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
@@ -38,7 +39,6 @@ router.get(
 )
 
 router.use(requireAuth, Router()
-    .post("/refresh", controller.refresh)
     .post("/logout", controller.logout)
 );
 
