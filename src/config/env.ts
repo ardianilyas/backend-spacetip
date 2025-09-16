@@ -12,5 +12,6 @@ export const env = {
     GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL,
     DATABASE_URL: process.env.DATABASE_URL,
     LOG_LEVEL: process.env.LOG_LEVEL || "info",
-    XENDIT_SECRET_KEY: process.env.XENDIT_SECRET_KEY
+    XENDIT_SECRET_KEY: process.env.XENDIT_SECRET_KEY,
+    XENDIT_WEBHOOK_TOKEN: process.env.XENDIT_WEBHOOK_TOKEN
 };
