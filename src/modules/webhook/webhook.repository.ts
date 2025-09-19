@@ -30,7 +30,7 @@ export class WebhookRepository {
         });
     }
 
-    async runTransaction(callback: (tx: TransactionClient) => Promise<void>) {
+    async runTransaction<T>(callback: (tx: TransactionClient) => Promise<T>): Promise<T> {
         return prisma.$transaction(callback);
     }
 }
