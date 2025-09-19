@@ -2,9 +2,14 @@ import { ConflictError, NotFoundError } from "../../utils/errors";
 import { logger } from "../../utils/logger";
 import { CreatorRepository } from "./creator.repository";
 import { CreateCreatorSchema } from "./creator.schema";
+import crypto from "crypto";
 
 export class CreatorService {
     constructor(private creatorRepo: CreatorRepository) {}
+
+    _generateTokenHex(length: number = 8): string {
+        return crypto.randomBytes(length).toString("hex");
+    }
 
     async getAllCreators() {
         return this.creatorRepo.getAllCreators();
@@ -14,6 +19,9 @@ export class CreatorService {
         const exists = await this.creatorRepo.findCreatorByUsername(data.username);
 
         if(exists) throw new ConflictError("Creator already exists");
+
+        const token = this._generateTokenHex(8);
+        data.token = token;
 
         const creator = await this.creatorRepo.createCreatorAccount(data);
         logger.app.info({ data: creator }, "A new creator created");

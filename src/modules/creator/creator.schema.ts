@@ -13,4 +13,4 @@ export const createCreatorSchema = z.object({
     bio: z.string().optional()
 });
 
-export type CreateCreatorSchema = z.infer<typeof createCreatorSchema> & { userId: string,  };
+export type CreateCreatorSchema = z.infer<typeof createCreatorSchema> & { userId: string, token?: string };
