@@ -40,11 +40,11 @@ export class WebhookService {
                     creatorBalanceUpdate,
                     donationUpdate,
                     payload: {
-                        creatorId: donation.creatorId,
+                        creatorToken: creator.token!,
                         donationId: donation.id,
                         amount: event.data.amount,
                         message: donation.message!,
-                        donorName: donation.donorName ?? "Anonymous"
+                        donorName: donation.donorName ?? "Someone",
                     } as DonationPaidPayload,
                 };
 
