@@ -1,3 +1,5 @@
+import { appEventEmitter } from "../../events/eventEmitter";
+import { DonationPaidPayload } from "../../events/types/donation.type";
 import { getIO } from "../../libs/websocket/socket";
 import { NotFoundError } from "../../utils/errors";
 import { logger } from "../../utils/logger";
@@ -33,16 +35,15 @@ export class WebhookService {
 
                 await this.webhookRepo.updateDonationStatus(donation.id, { status: "PAID", paidAt: new Date() }, tx);
 
-                if (creator?.id) {
-                    const io = getIO();
-                    // change creator id to creator token soon
-                    io.to(`creator_${creator.id}`).emit("donation_message", {
-                        donationId: donation.id,
-                        amount: event.data.amount,
-                        message: donation.message,
-                        donorName: donation.donorName || "Anonymous"
-                    });
+                const payload: DonationPaidPayload = {
+                    creatorId: donation.creatorId,
+                    donationId: donation.id,
+                    amount: event.data.amount,
+                    message: donation.message!,
+                    donorName: donation.donorName ?? "Anonymous"
                 }
+
+                appEventEmitter.emit("donation.paid", payload);
             });
         }
         logger.app.info({ donationId: donation.id }, "Webhook processed successfully");

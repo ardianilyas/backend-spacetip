@@ -1,6 +1,7 @@
 import app from "./app";
 import http from "http";
 import { initSocket } from "./libs/websocket/socket";
+import "./events";
 
 const PORT = process.env.PORT || 8000;
 
