@@ -24,27 +24,36 @@ export class WebhookService {
         }
 
         if (event.data.status === "SUCCEEDED") {
-            await this.webhookRepo.runTransaction(async (tx) => {
+            const result = await this.webhookRepo.runTransaction(async (tx) => {
                 const creator = await this.webhookRepo.findCreatorById(donation.creatorId);
 
                 if (!creator) {
                     logger.error.info({ creatorId: donation.creatorId }, "Creator not found");
+                    throw new NotFoundError(`Creator with id ${donation.creatorId} not found`);
                 }
 
-                await this.webhookRepo.updateCreatorBalance(donation.creatorId, event.data.amount, tx);
+                const creatorBalanceUpdate = await this.webhookRepo.updateCreatorBalance(donation.creatorId, event.data.amount, tx);
 
-                await this.webhookRepo.updateDonationStatus(donation.id, { status: "PAID", paidAt: new Date() }, tx);
+                const donationUpdate = await this.webhookRepo.updateDonationStatus(donation.id, { status: "PAID", paidAt: new Date() }, tx);
 
-                const payload: DonationPaidPayload = {
-                    creatorId: donation.creatorId,
-                    donationId: donation.id,
-                    amount: event.data.amount,
-                    message: donation.message!,
-                    donorName: donation.donorName ?? "Anonymous"
-                }
+                return {
+                    creatorBalanceUpdate,
+                    donationUpdate,
+                    payload: {
+                        creatorId: donation.creatorId,
+                        donationId: donation.id,
+                        amount: event.data.amount,
+                        message: donation.message!,
+                        donorName: donation.donorName ?? "Anonymous"
+                    } as DonationPaidPayload,
+                };
 
-                appEventEmitter.emit("donation.paid", payload);
             });
+
+            logger.app.info({ data: result.creatorBalanceUpdate }, "Creator balance updated");
+            logger.app.info({ data: result.donationUpdate }, "Donation status updated to PAID");
+
+            appEventEmitter.emit("donation.paid", result.payload);
         }
         logger.app.info({ donationId: donation.id }, "Webhook processed successfully");
         return { message: "Webhook processed successfully" };
