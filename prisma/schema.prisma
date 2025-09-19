@@ -59,6 +59,7 @@ model RefreshToken {
 model Creator {
   id            String        @id @default(uuid())
   username      String        @unique
+  token         String?       @unique 
   balance       Int           @default(0)
   userId        String        @unique
   user          User          @relation(fields: [userId], references: [id])
@@ -114,4 +115,6 @@ model Transaction {
 
   donation        Donation  @relation("DonationTransaction", fields: [donationId], references: [id])
   creator         Creator   @relation(fields: [creatorId], references: [id])
+
+  @@map("transactions")
 }
