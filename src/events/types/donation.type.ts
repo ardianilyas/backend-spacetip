@@ -1,5 +1,5 @@
 export interface DonationPaidPayload {
-    creatorId: string;
+    creatorToken: string;
     donationId: string;
     amount: number;
     message?: string;
