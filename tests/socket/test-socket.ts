@@ -1,21 +1,34 @@
 import { io } from "socket.io-client";
+import { prisma } from "../../src/config/prisma"; // sesuaikan path prisma client kamu
 
-const socket = io("http://localhost:8000", {
+async function main() {
+  // Ambil 1 data creator dari DB (misalnya yang pertama)
+  const creator = await prisma.creator.findFirst();
+  
+  if (!creator) {
+    console.error("No creator found in database");
+    process.exit(1);
+  }
+
+  const socket = io("http://localhost:8000", {
     transports: ["websocket"],
-});
+  });
 
-socket.on("connect", () => {
+  socket.on("connect", () => {
     console.log("Connected to server", socket.id);
 
-    socket.emit("join_creator_room", "0fe46188-7d8f-4cc5-b219-a21f0efd0c59");
+    socket.emit("join_creator_room", creator.token);
 
-    console.log("Joined room 0fe46188-7d8f-4cc5-b219-a21f0efd0c59, waiting for donations. . .");  
-});
+    console.log(`Joined room ${creator.token}, waiting for donations...`);
+  });
 
-socket.on("donation_message", (data) => {
+  socket.on("donation_message", (data) => {
     console.log("New donation received: ", data);
-});
+  });
 
-socket.on("disconnect", () => {
+  socket.on("disconnect", () => {
     console.log("Disconnected from server");
-});
+  });
+}
+
+main();
