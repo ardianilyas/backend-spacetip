@@ -5,10 +5,11 @@ import { WebhookService } from "./webhook.service";
 
 export class WebhookController {
     constructor(private webhookService: WebhookService) {
-        this.webhook = this.webhook.bind(this);
+        this.paymentQRwebhook = this.paymentQRwebhook.bind(this);
+        this.withdrawalWebhook = this.withdrawalWebhook.bind(this);
     }
 
-    async webhook(req: Request, res: Response, next: NextFunction) {
+    async paymentQRwebhook(req: Request, res: Response, next: NextFunction) {
 
         const xenditCallbackToken = req.headers["x-callback-token"] as string;
         const webhookToken = env.XENDIT_WEBHOOK_TOKEN as string;
@@ -25,6 +26,23 @@ export class WebhookController {
             console.error("Webhook processing error:", error);
             logger.error.error({ err: error }, "Webhook processing error");
             next(error); 
+        }
+    }
+
+    async withdrawalWebhook(req: Request, res: Response, next: NextFunction) {
+        const xenditCallbackToken = req.headers["x-callback-token"] as string;
+        const webhookToken = env.XENDIT_WEBHOOK_TOKEN as string;
+
+        if (xenditCallbackToken !== webhookToken) {
+            logger.error.info({ token: xenditCallbackToken }, "Invalid webhook token.");
+            return res.status(401).json({ success: false, message: "Invalid webhook token." });
+        }
+
+        try {
+            const result = await this.webhookService.processXenditWebhookWithdrawal(req.body);
+            return res.status(200).json(result);
+        } catch (error) {
+            next(error);
         }
     }
 }
