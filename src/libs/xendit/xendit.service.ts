@@ -1,5 +1,5 @@
 import { xenditClient } from "./xendit.client";
-import { CreateQRCodePayload } from "./xendit.types";
+import { CreateDisbursementPayload, CreateQRCodePayload } from "./xendit.types";
 
 export class XenditService {
     static async createQRCode({
@@ -24,6 +24,17 @@ export class XenditService {
             amount
         });
 
+        return response.data;
+    }
+
+    static async disbursement(data: CreateDisbursementPayload) {
+        const response = await xenditClient.post("/disbursements", {
+            external_id: data.externalId,
+            amount: data.amount,
+            bank_code: data.bankCode,
+            account_holder_name: data.accountHolderName,
+            account_number: data.accountNumber
+        });
         return response.data;
     }
 }

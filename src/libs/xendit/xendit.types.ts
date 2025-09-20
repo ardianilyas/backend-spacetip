@@ -5,3 +5,11 @@ export interface CreateQRCodePayload {
     currency?: "IDR",
     expiresAt?: string;
 }
+
+export interface CreateDisbursementPayload {
+    amount: number;
+    externalId: string;
+    bankCode: string;
+    accountHolderName: string;
+    accountNumber: string;
+}
