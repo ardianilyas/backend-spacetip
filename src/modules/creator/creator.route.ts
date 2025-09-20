@@ -3,6 +3,7 @@ import { requireAuth } from "../../middlewares/auth";
 import { CreatorController } from "./creator.controller";
 import { CreatorRepository } from "./creator.repository";
 import { CreatorService } from "./creator.service";
+import { checkRole } from "../../middlewares/checkRole";
 
 const router = Router();
 
@@ -14,6 +15,6 @@ router.use(requireAuth);
 
 router.post("/", controller.createCreator);
 router.get("/:username", controller.findCreatorByUsername);
-router.get("/verify/:userId", controller.verifyCreator);
+router.get("/verify/:userId", checkRole("admin", "superadmin"), controller.verifyCreator);
 
 export default router;
