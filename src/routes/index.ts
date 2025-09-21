@@ -11,7 +11,7 @@ const apiRouter = router;
 apiRouter.use("/", webhookRouter);
 apiRouter.use("/auth", authRoute);
 apiRouter.use("/creators", creatorRouter);
-apiRouter.use("/donaio", donationRouter);
+apiRouter.use("/donations", donationRouter);
 apiRouter.use("/withdrawals", withdrawalRouter);
 
 router.use("/", apiRouter);

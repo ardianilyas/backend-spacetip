@@ -9,6 +9,10 @@ export class CreatorRepository {
         return prisma.creator.findMany({ select: { username: true, bio: true, isVerified: true } });
     }
 
+    async getCreatorBalance(userId: string): Promise<CreatorDataType | null> {
+        return prisma.creator.findUnique({ where: { userId }, select: { username: true, bio: true, balance: true, isVerified: true } });
+    }
+
     async createCreatorAccount(data: CreateCreatorSchema): Promise<Creator> {
         return prisma.creator.create({ data });
     }

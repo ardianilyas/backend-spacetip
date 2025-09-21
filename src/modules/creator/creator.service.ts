@@ -15,6 +15,10 @@ export class CreatorService {
         return this.creatorRepo.getAllCreators();
     }
 
+    async getCreatorBalance(userId: string) {
+        return this.creatorRepo.getCreatorBalance(userId);
+    }
+
     async createCreator(data: CreateCreatorSchema) {
         const exists = await this.creatorRepo.findCreatorByUsername(data.username);
 

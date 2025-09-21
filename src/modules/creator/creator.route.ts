@@ -14,6 +14,7 @@ const controller = new CreatorController(creatorService);
 router.use(requireAuth);
 
 router.post("/", controller.createCreator);
+router.get("/", controller.getCreatorBalance);
 router.get("/:username", controller.findCreatorByUsername);
 router.get("/verify/:userId", checkRole("admin", "superadmin"), controller.verifyCreator);
 
