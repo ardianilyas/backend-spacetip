@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { env } from "../../config/env";
 import { logger } from "../../utils/logger";
 import { WebhookService } from "./webhook.service";
+import { sendError, sendSuccess } from "../../utils/response";
 
 export class WebhookController {
     constructor(private webhookService: WebhookService) {
@@ -16,12 +17,12 @@ export class WebhookController {
     
         if (xenditCallbackToken !== webhookToken) {
             logger.error.info({ token: xenditCallbackToken }, "Invalid webhook token.");
-            return res.status(401).json({ success: false, message: "Invalid webhook token." });
+            return sendError(res, "Invalid webhook token.", 401);
         }
     
         try {
             const result = await this.webhookService.processXenditWebhook(req.body);
-            return res.status(200).json(result);
+            return sendSuccess(res, result, "Webhook processed successfully", 200);
         } catch (error) {
             console.error("Webhook processing error:", error);
             logger.error.error({ err: error }, "Webhook processing error");
@@ -35,12 +36,12 @@ export class WebhookController {
 
         if (xenditCallbackToken !== webhookToken) {
             logger.error.info({ token: xenditCallbackToken }, "Invalid webhook token.");
-            return res.status(401).json({ success: false, message: "Invalid webhook token." });
+            return sendError(res, "Invalid webhook token.", 401);
         }
 
         try {
             const result = await this.webhookService.processXenditWebhookWithdrawal(req.body);
-            return res.status(200).json(result);
+            return sendSuccess(res, result, "Webhook processed successfully", 200);
         } catch (error) {
             next(error);
         }

@@ -5,6 +5,7 @@ import { env } from "../../config/env.js";
 import { validate } from "../../utils/validate.js";
 import { loginSchema, RegisterSchema, registerSchema } from "./auth.schema.js";
 import msFromExpiryString from "../../utils/msFromExpiryString.js";
+import { sendSuccess } from "../../utils/response.js";
 
 export class AuthController {
     constructor(private authService: AuthService) {
@@ -18,7 +19,7 @@ export class AuthController {
         try {
             const data: RegisterSchema = validate(registerSchema, req.body);
             await this.authService.register(data);
-            res.status(201).json({ success: true, message: "User registered successfully" });
+            return sendSuccess(res, null, "User registered successfully", 201);
         } catch (error) {
             next(error);
         }
@@ -32,7 +33,7 @@ export class AuthController {
           setAccessCookie(res, accessToken, msFromExpiryString(env.JWT_ACCESS_EXPIRES));
           setRefreshCookie(res, refreshToken, msFromExpiryString(env.JWT_REFRESH_EXPIRES));
       
-          res.json({ success: true });
+          return sendSuccess(res, null, "Login successfully", 200);
         } catch (err) {
           next(err);
         }
@@ -50,7 +51,7 @@ export class AuthController {
           setAccessCookie(res, accessToken, msFromExpiryString(env.JWT_ACCESS_EXPIRES));
           setRefreshCookie(res, newRefresh, msFromExpiryString(env.JWT_REFRESH_EXPIRES));
       
-          res.json({ success: true });
+          return sendSuccess(res, null, "Refresh token rotated successfully", 200);
         } catch (err) {
           next(err);
         }
@@ -61,7 +62,7 @@ export class AuthController {
           const refreshToken = req.cookies.refreshToken;
           await this.authService.logout(refreshToken);
           clearAuthCookies(res);
-          res.json({ success: true });
+          return sendSuccess(res, null, "Logout successfully", 200);
         } catch (err) {
           next(err);
         }

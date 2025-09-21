@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { CreatorService } from "./creator.service";
 import { validate } from "../../utils/validate";
 import { createCreatorSchema } from "./creator.schema";
+import { sendSuccess } from "../../utils/response";
 
 export class CreatorController {
     constructor(private creatorService: CreatorService) {
@@ -15,7 +16,7 @@ export class CreatorController {
     async getAllCreators(req: Request, res: Response, next: NextFunction) {
         try {
             const creators = await this.creatorService.getAllCreators();
-            return res.status(200).json({ success: true, data: creators });
+            return sendSuccess(res, creators, "Creators found", 200);
         } catch (error) {
             next(error);
         }
@@ -25,7 +26,7 @@ export class CreatorController {
         try {
             const userId = req.user?.userId!;
             const balance = await this.creatorService.getCreatorBalance(userId);
-            return res.status(200).json({ success: true, data: balance });
+            return sendSuccess(res, balance, "Creator balance found", 200);
         } catch (error) {
             next(error);
         }
@@ -36,7 +37,7 @@ export class CreatorController {
             const validatedData = validate(createCreatorSchema, req.body);
             const data = { ...validatedData, userId: req.user?.userId! };
             await this.creatorService.createCreator(data);
-            return res.status(201).json({ success: true, message: "Creator created successfully" });
+            return sendSuccess(res, null, "Creator created successfully", 201);
         } catch (error) {
             next(error);
         }
@@ -46,7 +47,7 @@ export class CreatorController {
         try {
             const { username } = req.params;
             const creator = await this.creatorService.findCreatorByUsername(username);
-            return res.status(200).json({ success: true, data: creator });
+            return sendSuccess(res, creator, "Creator found", 200);
         } catch (error) {
             next(error);
         }
@@ -56,7 +57,7 @@ export class CreatorController {
         try {
             const { userId } = req.params;
             const creator = await this.creatorService.verifyCreator(userId);
-            return res.status(200).json({ success: true, message: "Creator verified", data: creator });
+            return sendSuccess(res, creator, "Creator verified successfully", 200);
         } catch (error) {
             next(error);
         }

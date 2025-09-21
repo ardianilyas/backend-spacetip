@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { DonationService } from "./donation.service";
 import { validate } from "../../utils/validate";
 import { CreateDonationSchema, createDonationSchema, simulatePaymentSchema } from "./donation.schema";
+import { sendSuccess } from "../../utils/response";
 
 export class DonationController {
     constructor(private donationService: DonationService) {
@@ -14,7 +15,7 @@ export class DonationController {
         try {
             const { username } = req.params;
             const creator = await this.donationService.getCreatorByUsername(username);
-            res.status(200).json(creator);
+            return sendSuccess(res, creator, "Creator found", 200);
         } catch (error) {
             next(error);
         }
@@ -25,7 +26,7 @@ export class DonationController {
             const validatedData = validate(createDonationSchema, req.body);
             const data = { ...validatedData, donorId: req.user?.userId! } as CreateDonationSchema;
             const response = await this.donationService.createDonation(data);
-            res.status(201).json(response);
+            return sendSuccess(res, response, "Donation created successfully", 201);
         } catch (error) {
             next(error);
         }
@@ -35,7 +36,7 @@ export class DonationController {
         try {
             const data = validate(simulatePaymentSchema, req.body);
             const response = await this.donationService.simulateQrPayment(data.qrId, data.amount);
-            res.status(200).json(response);
+            return sendSuccess(res, response, "QR Payment simulated successfully", 200);
         } catch (error) {
             next(error);
         }
