@@ -1,10 +1,11 @@
 import { Creator, Donation } from "../../../prisma/generated/prisma";
 import { prisma } from "../../config/prisma";
+import { CreatorDataType } from "../creator/creator.type";
 import { CreateDonationSchema } from "./donation.schema";
 
 export class DonationRepository {
-    async getCreatorByUsername(username: string): Promise<Creator | null> {
-        return prisma.creator.findUnique({ where: { username } });
+    async getCreatorByUsername(username: string): Promise<CreatorDataType | null> {
+        return prisma.creator.findUnique({ where: { username }, select: { username: true, bio: true, isVerified: true } });
     }
 
     async createDonation(data: CreateDonationSchema): Promise<Donation> {
