@@ -9,10 +9,21 @@ import { sendSuccess } from "../../utils/response.js";
 
 export class AuthController {
     constructor(private authService: AuthService) {
+        this.me = this.me.bind(this);
         this.register = this.register.bind(this);
         this.login = this.login.bind(this);
         this.refresh = this.refresh.bind(this);
         this.logout = this.logout.bind(this);
+    }
+
+    async me(req: Request, res: Response, next: NextFunction) {
+      try {
+        const id = req.user?.userId!;
+        const user = await this.authService.me(id);
+        return sendSuccess(res, user, "User found", 200);
+      } catch (error) {
+        next(error);
+      }
     }
 
     async register(req: Request, res: Response, next: NextFunction) {

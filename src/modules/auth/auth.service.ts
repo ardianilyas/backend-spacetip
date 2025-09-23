@@ -16,6 +16,12 @@ export class AuthService {
 
     }
 
+    async me(id: string) {
+        const user = await this.authRepo.findUserById(id);
+        if (!user) throw new NotFoundError("User not found");
+        return user;
+    }
+
     async register(data: RegisterSchema) {
         const hashed = await hashString(data.password);
 
