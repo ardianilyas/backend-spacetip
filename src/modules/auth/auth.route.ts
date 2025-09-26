@@ -40,7 +40,7 @@ router.get(
 
 router.use(requireAuth, Router()
     .post("/logout", controller.logout)
-    .post("/me", controller.me)
+    .get("/me", controller.me)
 );
 
 export default router;
