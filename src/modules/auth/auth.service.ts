@@ -9,7 +9,7 @@ import { LoginSchema, RegisterSchema } from './auth.schema.js';
 import msFromExpiryString from '../../utils/msFromExpiryString.js';
 import { AuthRepository } from './auth.repository.js';
 import { logger } from '../../utils/logger.js';
-import { ConflictError, NotFoundError } from '../../utils/errors.js';
+import { ConflictError, NotFoundError, UnprocessableEntityError } from '../../utils/errors.js';
 
 export class AuthService {
     constructor(private refreshRepo: RefreshTokenRepository, private authRepo: AuthRepository) {
@@ -36,10 +36,10 @@ export class AuthService {
 
     async login(data: LoginSchema) {
         const user = await prisma.user.findUnique({ where: { email: data.email } });
-        if (!user) throw new Error("Invalid credentials");
+        if (!user) throw new UnprocessableEntityError("This credentials doesn't match our records");
 
         const ok = await compareHash(data.password, user.password!);
-        if(!ok) throw new Error("Invalid credentials");
+        if(!ok) throw new UnprocessableEntityError("This credentials doesn't match our records");
 
         const accessToken = signAccessToken({ userId: user.id, role: user.role });
 
